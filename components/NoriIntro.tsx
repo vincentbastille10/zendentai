@@ -328,7 +328,16 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <p className="text-white/88 text-[16px] leading-[1.58] whitespace-pre-line">
+              <p
+                className="text-white/90 whitespace-pre-line"
+                style={{
+                  fontFamily: "var(--font-cormorant)",
+                  fontStyle: "italic",
+                  fontWeight: 500,
+                  fontSize: 22,
+                  lineHeight: 1.52,
+                }}
+              >
                 {noriReply}
               </p>
             </motion.div>
@@ -344,11 +353,15 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
                       initial={{ opacity: 0, y: 9 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                      className="text-white font-semibold"
+                      className="text-white"
                       style={{
-                        fontSize: 21,
-                        lineHeight: 1.32,
-                        textShadow: "0 2px 20px rgba(0,0,0,0.65)",
+                        fontFamily: "var(--font-cormorant)",
+                        fontStyle: "italic",
+                        fontWeight: 500,
+                        fontSize: 28,
+                        lineHeight: 1.38,
+                        letterSpacing: "0.01em",
+                        textShadow: "0 2px 24px rgba(0,0,0,0.6)",
                       }}
                     >
                       {p.text}
