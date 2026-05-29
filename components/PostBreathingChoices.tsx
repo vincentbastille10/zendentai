@@ -4,17 +4,18 @@ import { motion } from "framer-motion";
 import { NoriAvatar } from "@/components/NoriAvatar";
 import { SafetyNote } from "@/components/SafetyNote";
 
-type Choice = "continue" | "calm-image" | "calm-game" | "restart";
+export type PostBreathingChoice = "continue" | "calm-image" | "calm-game" | "practitioner" | "restart";
 
 interface PostBreathingChoicesProps {
-  onChoice: (c: Choice) => void;
+  onChoice: (c: PostBreathingChoice) => void;
 }
 
-const choices: { id: Choice; label: string; sub: string }[] = [
-  { id: "continue", label: "Continuer doucement", sub: "Encore quelques respirations" },
-  { id: "calm-image", label: "Voyager dans une image calme", sub: "Bord de mer, forêt, ciel étoilé" },
-  { id: "calm-game", label: "Petit jeu calme", sub: "Cinq bulles à laisser partir" },
-  { id: "restart", label: "Recommencer depuis le début", sub: "Revenir à l'accueil" },
+const choices: { id: PostBreathingChoice; label: string; sub: string }[] = [
+  { id: "continue",     label: "Continuer doucement",                sub: "Encore quelques respirations" },
+  { id: "calm-game",    label: "Petit jeu calme",                    sub: "Soufflez doucement la feuille" },
+  { id: "calm-image",   label: "Voyager dans une image calme",       sub: "Bord de mer, forêt, ciel étoilé" },
+  { id: "practitioner", label: "Pour le cabinet",                    sub: "Découvrir ce que Zendentai apporte" },
+  { id: "restart",      label: "Recommencer depuis le début",        sub: "Revenir à l'accueil" },
 ];
 
 export function PostBreathingChoices({ onChoice }: PostBreathingChoicesProps) {
@@ -29,7 +30,7 @@ export function PostBreathingChoices({ onChoice }: PostBreathingChoicesProps) {
 
   return (
     <div className="flex flex-col min-h-screen px-5 py-12 text-white">
-      {/* Header with Nori */}
+      {/* Header */}
       <motion.div
         className="flex flex-col items-center text-center mb-10 gap-4"
         initial={{ opacity: 0, y: 20 }}
