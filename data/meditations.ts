@@ -1,17 +1,16 @@
 export type IntentionId = "breathe" | "center" | "accompanied" | "wait";
 
-// ── Nori breathing — étapes canoniques ───────────────────────────────────────
+// ── Nori breathing — étapes canoniques (multi-ligne : titre \n sous-texte) ───
 
 export const noriBreathingSteps: string[] = [
-  "Installez-vous simplement.",
-  "Laissez vos épaules descendre.",
-  "Inspirez doucement.",
-  "Gardez l'air un instant.",
-  "Expirez plus lentement.",
-  "Encore une fois, sans effort.",
-  "Vous n'avez rien à réussir.",
-  "Je reste avec vous.",
-  "Voilà. Un peu plus d'espace.",
+  "Posez les deux pieds au sol.\nRelâchez les épaules doucement.",
+  "Inspirez lentement par le nez.\nLaissez l'air descendre vers le ventre.",
+  "Soufflez lentement par la bouche.\nUn peu plus longtemps que l'inspiration.",
+  "Desserrez doucement la mâchoire.\nVotre visage peut se relâcher.",
+  "Encore une fois, sans effort.\nVous n'avez rien à réussir.",
+  "Vous n'êtes pas seul.\nL'équipe est là pour vous accompagner.",
+  "Une étape à la fois.\nRevenez simplement à cette respiration.",
+  "Voilà. Encore un peu d'espace.\nVous pouvez attendre plus sereinement.",
 ];
 
 // ── Scripts locaux par intention ──────────────────────────────────────────────
