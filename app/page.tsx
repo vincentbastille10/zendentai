@@ -4,12 +4,13 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import NoriIntro from "@/components/NoriIntro";
 import { GuideSession } from "@/components/GuideSession";
-import { PostBreathingChoices } from "@/components/PostBreathingChoices";
+import { PostBreathingChoices, PostBreathingChoice } from "@/components/PostBreathingChoices";
 import { CalmGamePreview } from "@/components/CalmGamePreview";
 import { AmbienceSelector } from "@/components/AmbienceSelector";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { SoftButton } from "@/components/SoftButton";
 import { NoriAvatar } from "@/components/NoriAvatar";
+import { PractitionerValuePanel } from "@/components/PractitionerValuePanel";
 import { noriBreathingSteps } from "@/data/meditations";
 
 type Screen =
@@ -18,7 +19,8 @@ type Screen =
   | "post-breathing"
   | "calm-image-select"
   | "calm-image-view"
-  | "calm-game";
+  | "calm-game"
+  | "practitioner";
 
 function ScreenWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -62,16 +64,17 @@ export default function Page() {
   const bgAmbienceId =
     screen === "calm-image-view" || screen === "calm-image-select" ? calmAmbienceId : null;
 
-  function handlePostBreathing(choice: "continue" | "calm-image" | "calm-game" | "restart") {
-    if (choice === "continue") setScreen("breathing");
-    else if (choice === "calm-image") setScreen("calm-image-select");
-    else if (choice === "calm-game") setScreen("calm-game");
-    else setScreen("intro");
+  function handlePostBreathing(choice: PostBreathingChoice) {
+    if (choice === "continue")         setScreen("breathing");
+    else if (choice === "calm-image")  setScreen("calm-image-select");
+    else if (choice === "calm-game")   setScreen("calm-game");
+    else if (choice === "practitioner") setScreen("practitioner");
+    else                               setScreen("intro");
   }
 
   return (
     <div className="fixed inset-0 overflow-hidden">
-      {/* Background seulement hors intro (NoriIntro gère son propre fond) */}
+      {/* Background only outside intro (NoriIntro manages its own background) */}
       {screen !== "intro" && <AmbientBackground ambienceId={bgAmbienceId} />}
 
       <AnimatePresence mode="wait">
@@ -89,7 +92,7 @@ export default function Page() {
           </motion.div>
         )}
 
-        {/* ── Respiration ── */}
+        {/* ── Respiration guidée ── */}
         {screen === "breathing" && (
           <ScreenWrapper key="breathing">
             <GuideSession
@@ -136,10 +139,17 @@ export default function Page() {
           </ScreenWrapper>
         )}
 
-        {/* ── Jeu calme ── */}
+        {/* ── Jeu calme : Souffler la feuille ── */}
         {screen === "calm-game" && (
           <ScreenWrapper key="calm-game">
             <CalmGamePreview onDone={() => setScreen("post-breathing")} />
+          </ScreenWrapper>
+        )}
+
+        {/* ── Section praticien ── */}
+        {screen === "practitioner" && (
+          <ScreenWrapper key="practitioner">
+            <PractitionerValuePanel onBack={() => setScreen("post-breathing")} />
           </ScreenWrapper>
         )}
       </AnimatePresence>
