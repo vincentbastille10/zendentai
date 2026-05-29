@@ -22,7 +22,6 @@ const STARS = [
   { x: 95, y: 13, s: 1.1, d: 4.7, dl: 0.8 },
 ];
 
-// Water shimmer glints on horizon
 const GLINTS = [
   { x: 10, y: 58.5, w: 48, dl: 0.0 },
   { x: 28, y: 59.0, w: 32, dl: 1.8 },
@@ -31,14 +30,13 @@ const GLINTS = [
   { x: 84, y: 58.5, w: 36, dl: 2.7 },
 ];
 
-// Nori's phrases – each one appears naturally after the last
+// Nori phrases – scripted, no LLM
 const PHRASES = [
-  { text: "Bonjour, je suis Nori.", at: 1100 },
-  { text: "Je vais rester avec vous quelques minutes.", at: 2800 },
-  { text: "On commence simplement par respirer ensemble ?", at: 4600 },
-  { text: "Ça marche presque tout le temps 🙂", at: 6400 },
+  { text: "Bonjour, je suis Nori.", at: 800 },
+  { text: "Je vais rester avec vous quelques minutes, avant votre rendez-vous.", at: 2300 },
+  { text: "On commence simplement par respirer ensemble ?", at: 4000 },
 ];
-const BUTTON_AT = 8200;
+const CHOICES_AT = 5600;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -46,45 +44,27 @@ type NoriIntroProps = { onStart: () => void };
 
 export default function NoriIntro({ onStart }: NoriIntroProps) {
   const [shown, setShown] = useState<Set<number>>(new Set());
-  const [showCta, setShowCta] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [noriReply, setNoriReply] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [showChoices, setShowChoices] = useState(false);
+  const [chosen, setChosen] = useState<"apprehension" | null>(null);
 
   useEffect(() => {
     const timers = PHRASES.map((p, i) =>
       setTimeout(() => setShown((prev) => new Set([...prev, i])), p.at)
     );
-    const cta = setTimeout(() => setShowCta(true), BUTTON_AT);
-    return () => { timers.forEach(clearTimeout); clearTimeout(cta); };
+    const choiceTimer = setTimeout(() => setShowChoices(true), CHOICES_AT);
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(choiceTimer);
+    };
   }, []);
 
-  async function sendMessage() {
-    const text = message.trim();
-    if (!text || loading) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/nori-reply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
-      });
-      const data = await res.json();
-      setNoriReply(
-        data?.text ?? "Je vous entends.\n\nOn commence par respirer ensemble."
-      );
-      setMessage("");
-      setShowCta(true);
-    } catch {
-      setNoriReply("Je vous entends.\n\nOn commence par respirer ensemble.");
-      setShowCta(true);
-    } finally {
-      setLoading(false);
+  function handleChoice(key: "start" | "apprehension" | "pose") {
+    if (key === "start" || key === "pose") {
+      setTimeout(onStart, 350);
+    } else {
+      setChosen("apprehension");
     }
   }
-
-  const ctaVisible = showCta || !!noriReply;
 
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: "#05080e" }}>
@@ -102,7 +82,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
         }}
       />
 
-      {/* Nuages lumineux – blobs atmosphériques */}
+      {/* Nuages lumineux */}
       <motion.div
         className="absolute pointer-events-none"
         style={{
@@ -154,7 +134,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
         />
       ))}
 
-      {/* Lune – source de lumière douce */}
+      {/* Lune */}
       <div
         className="absolute pointer-events-none"
         style={{
@@ -167,12 +147,11 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
         }}
       />
 
-      {/* Ligne d'horizon + reflet de lune sur l'eau */}
+      {/* Horizon + reflet de lune */}
       <div
         className="absolute left-0 right-0 pointer-events-none"
         style={{ top: "58%" }}
       >
-        {/* Ligne horizon */}
         <div
           style={{
             height: 1,
@@ -180,34 +159,26 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
               "linear-gradient(90deg, transparent 0%, rgba(94,214,200,0.15) 20%, rgba(255,210,140,0.25) 55%, rgba(94,214,200,0.12) 80%, transparent 100%)",
           }}
         />
-        {/* Reflet de lune */}
         <div
           style={{
-            position: "absolute",
-            top: "2px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 80,
-            height: 24,
-            background:
-              "radial-gradient(ellipse, rgba(255,240,180,0.25) 0%, transparent 70%)",
+            position: "absolute", top: "2px",
+            left: "50%", transform: "translateX(-50%)",
+            width: 80, height: 24,
+            background: "radial-gradient(ellipse, rgba(255,240,180,0.25) 0%, transparent 70%)",
             filter: "blur(4px)",
           }}
         />
       </div>
 
-      {/* Miroitements de l'eau */}
+      {/* Miroitements eau */}
       {GLINTS.map((g, i) => (
         <motion.div
           key={i}
           className="absolute pointer-events-none"
           style={{
-            left: `${g.x}%`,
-            top: `${g.y}%`,
-            width: g.w,
-            height: 3,
-            background:
-              "radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, transparent 100%)",
+            left: `${g.x}%`, top: `${g.y}%`,
+            width: g.w, height: 3,
+            background: "radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, transparent 100%)",
             filter: "blur(1.5px)",
             borderRadius: 4,
           }}
@@ -216,7 +187,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
         />
       ))}
 
-      {/* Vignette basse – assure lisibilité du texte */}
+      {/* Vignette basse */}
       <div
         className="absolute inset-x-0 bottom-0 pointer-events-none"
         style={{
@@ -231,24 +202,23 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
           ════════════════════════════════════════════════ */}
       <div className="relative z-10 flex flex-col h-full max-w-[430px] mx-auto px-6">
 
-        {/* Zone Nori – occupe le haut de l'écran */}
+        {/* Zone Nori – haut de l'écran */}
         <div className="flex items-center justify-center" style={{ flex: "0 0 44%", paddingTop: "3vh" }}>
           <div className="relative">
 
-            {/* Aura externe – très douce */}
+            {/* Aura externe */}
             <motion.div
               className="absolute rounded-full pointer-events-none"
               style={{
                 inset: -52,
-                background:
-                  "radial-gradient(circle, rgba(94,214,200,0.16) 0%, transparent 68%)",
+                background: "radial-gradient(circle, rgba(94,214,200,0.16) 0%, transparent 68%)",
                 filter: "blur(20px)",
               }}
               animate={{ scale: [1, 1.2, 1], opacity: [0.45, 0.9, 0.45] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            {/* Anneau tenu */}
+            {/* Anneau */}
             <motion.div
               className="absolute rounded-full pointer-events-none"
               style={{ inset: -14, border: "1px solid rgba(94,214,200,0.22)" }}
@@ -256,7 +226,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
               transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
             />
 
-            {/* Avatar – flottant */}
+            {/* Avatar flottant */}
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
@@ -264,8 +234,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
               <div
                 className="relative overflow-hidden rounded-full"
                 style={{
-                  width: 180,
-                  height: 180,
+                  width: 180, height: 180,
                   background:
                     "radial-gradient(circle at 38% 32%, #dcfaf8 0%, #a8e8e5 32%, #6ccece 62%, #4ab8b8 100%)",
                   boxShadow:
@@ -277,16 +246,12 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
                   src="/images/nori/nori-avatar.png"
                   alt="Nori"
                   className="absolute inset-0 w-full h-full object-contain p-2"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                 />
-                {/* Reflet interne */}
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
-                    background:
-                      "linear-gradient(135deg, rgba(255,255,255,0.32) 0%, transparent 45%)",
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.32) 0%, transparent 45%)",
                     borderRadius: "50%",
                   }}
                 />
@@ -296,7 +261,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
           </div>
         </div>
 
-        {/* Zone texte + actions – ancré en bas */}
+        {/* Zone texte + actions */}
         <div
           className="flex flex-col"
           style={{
@@ -304,8 +269,7 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
             paddingBottom: "max(1.75rem, env(safe-area-inset-bottom, 1.75rem))",
           }}
         >
-
-          {/* Badge ZenDentAI */}
+          {/* Badge */}
           <motion.p
             className="text-center text-[10px] uppercase tracking-[0.42em] mb-5"
             style={{ color: "rgba(94,214,200,0.48)" }}
@@ -316,73 +280,114 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
             ZenDentAI · Nori
           </motion.p>
 
-          {/* Réponse Nori après message utilisateur */}
-          {noriReply && (
-            <motion.div
-              className="mb-5 rounded-2xl px-5 py-4"
-              style={{
-                background: "rgba(94,214,200,0.09)",
-                border: "1px solid rgba(94,214,200,0.2)",
-              }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <p
-                className="text-white/90 whitespace-pre-line"
-                style={{
-                  fontFamily: "var(--font-cormorant)",
-                  fontStyle: "italic",
-                  fontWeight: 500,
-                  fontSize: 22,
-                  lineHeight: 1.52,
-                }}
-              >
-                {noriReply}
-              </p>
-            </motion.div>
-          )}
-
           {/* Phrases progressives */}
-          {!noriReply && (
-            <div className="flex-1 flex flex-col justify-end gap-[10px] mb-7">
-              {PHRASES.map((p, i) => (
-                <AnimatePresence key={i}>
-                  {shown.has(i) && (
-                    <motion.p
-                      initial={{ opacity: 0, y: 9 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                      className="text-white"
-                      style={{
-                        fontFamily: "var(--font-cormorant)",
-                        fontStyle: "italic",
-                        fontWeight: 500,
-                        fontSize: 28,
-                        lineHeight: 1.38,
-                        letterSpacing: "0.01em",
-                        textShadow: "0 2px 24px rgba(0,0,0,0.6)",
-                      }}
-                    >
-                      {p.text}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              ))}
-            </div>
-          )}
+          <div className="flex-1 flex flex-col justify-end gap-[10px] mb-6">
+            {PHRASES.map((p, i) => (
+              <AnimatePresence key={i}>
+                {shown.has(i) && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 9 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-white"
+                    style={{
+                      fontFamily: "var(--font-cormorant)",
+                      fontStyle: "italic",
+                      fontWeight: 500,
+                      fontSize: 28,
+                      lineHeight: 1.38,
+                      letterSpacing: "0.01em",
+                      textShadow: "0 2px 24px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    {p.text}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            ))}
 
-          {noriReply && <div className="flex-1" />}
+            {/* Réassurance si appréhension choisie */}
+            <AnimatePresence>
+              {chosen === "apprehension" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="rounded-2xl px-5 py-4 mt-2"
+                  style={{
+                    background: "rgba(94,214,200,0.09)",
+                    border: "1px solid rgba(94,214,200,0.2)",
+                  }}
+                >
+                  <p
+                    className="text-white/90 whitespace-pre-line"
+                    style={{
+                      fontFamily: "var(--font-cormorant)",
+                      fontStyle: "italic",
+                      fontWeight: 500,
+                      fontSize: 22,
+                      lineHeight: 1.52,
+                    }}
+                  >
+                    {"C'est fréquent avant un soin.\nVous n'avez rien à réussir ici.\nOn va simplement souffler un peu plus lentement."}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-          {/* Bouton principal – n'apparaît qu'après toutes les phrases */}
+          {/* Choix scriptés (Betty-style) */}
           <AnimatePresence>
-            {ctaVisible && (
+            {showChoices && !chosen && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col gap-3 mb-3"
+              >
+                <button
+                  type="button"
+                  onClick={() => handleChoice("start")}
+                  className="w-full rounded-2xl py-[17px] text-[17px] font-extrabold tracking-[0.01em]"
+                  style={{
+                    background: "#5ED6C8",
+                    color: "#031d2c",
+                    boxShadow:
+                      "0 0 0 1.5px rgba(94,214,200,0.5), 0 10px 42px rgba(94,214,200,0.32), 0 3px 12px rgba(0,0,0,0.35)",
+                  }}
+                >
+                  Oui, commencer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChoice("apprehension")}
+                  className="w-full rounded-2xl py-4 text-[15px] font-semibold text-white/80"
+                  style={{ border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.06)" }}
+                >
+                  {"J'ai un peu d'appréhension"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChoice("pose")}
+                  className="w-full rounded-2xl py-4 text-[15px] font-semibold text-white/80"
+                  style={{ border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.06)" }}
+                >
+                  Je veux juste me poser
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Bouton "Commencer" après réassurance */}
+          <AnimatePresence>
+            {chosen === "apprehension" && (
               <motion.button
                 type="button"
                 onClick={onStart}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ delay: 0.5, duration: 0.8 }}
                 className="w-full rounded-2xl py-[17px] text-[17px] font-extrabold tracking-[0.01em] mb-3"
                 style={{
                   background: "#5ED6C8",
@@ -391,69 +396,8 @@ export default function NoriIntro({ onStart }: NoriIntroProps) {
                     "0 0 0 1.5px rgba(94,214,200,0.5), 0 10px 42px rgba(94,214,200,0.32), 0 3px 12px rgba(0,0,0,0.35)",
                 }}
               >
-                Respirer avec Nori
+                Commencer la respiration
               </motion.button>
-            )}
-          </AnimatePresence>
-
-          {/* Lien chat – très discret */}
-          <AnimatePresence>
-            {ctaVisible && !chatOpen && (
-              <motion.button
-                type="button"
-                onClick={() => setChatOpen(true)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
-                className="w-full py-3 text-sm font-medium rounded-2xl mb-1"
-                style={{ color: "rgba(207,231,234,0.5)" }}
-              >
-                Parler un instant avec Nori
-              </motion.button>
-            )}
-          </AnimatePresence>
-
-          {/* Zone chat */}
-          <AnimatePresence>
-            {chatOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.45 }}
-                className="space-y-3 mb-1"
-              >
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Écrivez quelques mots à Nori…"
-                  rows={3}
-                  className="w-full resize-none rounded-2xl px-4 py-4 text-white text-[15px] outline-none leading-relaxed"
-                  style={{
-                    background: "rgba(255,255,255,0.07)",
-                    border: "1px solid rgba(255,255,255,0.13)",
-                  }}
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={sendMessage}
-                    disabled={loading || !message.trim()}
-                    className="rounded-2xl py-3 text-sm font-bold disabled:opacity-45"
-                    style={{ background: "rgba(248,250,252,0.92)", color: "#082030" }}
-                  >
-                    {loading ? "Nori répond…" : "Envoyer"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onStart}
-                    className="rounded-2xl py-3 text-sm font-semibold text-white"
-                    style={{ border: "1px solid rgba(255,255,255,0.15)" }}
-                  >
-                    Respirer
-                  </button>
-                </div>
-              </motion.div>
             )}
           </AnimatePresence>
 
